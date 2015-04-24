@@ -16,4 +16,15 @@ site/solrhome
 combined/data/
 combined/solrhome
 *.error
-local-dev
+
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+
