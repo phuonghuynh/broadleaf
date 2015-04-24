@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+
+<head th:include="/layout/partials/head (pageTitle=${category.name + ' - Broadleaf Demo - Heat Clinic'})"></head>
+
+<body>
+    <div id="notification_bar"></div>
+    <header th:substituteby="layout/partials/header" />
+
+    <div id="content" class="width_setter group" role="main">
+
+        <nav th:substituteby="layout/partials/nav" />
+
+        <section id="left_column">
+
+            <header>
+                <h1 th:inline="text">
+                    <span th:text="#{category.viewing}">Viewing</span> [[${category.name}]] ([[${result.startResult}]] - [[${result.endResult}]] <span th:text="#{category.of}">of</span> [[${result.totalResults}]])
+                </h1>
+                <div th:substituteby="catalog/partials/productSortOptions"></div>
+            </header>
+
+            <ul id="products" class="group">
+                <li th:each="product : ${products}" th:object="${product}" class="product_container">
+
+
+                <div th:if="${product.value.featuredProduct}" class="new_badge">New!</div>
+
+				<div class="image">
+				    <a th:href="@{${product.value.url}}">
+				    <img th:if="${product.value.media['primary']}" blc:src="@{${product.value.media['primary'].url} + '?browse'}" th:alt="${product.value.name}" />
+				    <div class="price" th:if="${#object instanceof T(org.broadleafcommerce.core.catalog.domain.ProductBundle)}">
+				        <div blc:price="${product.value.salePrice}" th:if="${product.value.onSale}" th:classappend="${product.value.defaultSku.onSale}? 'sale'"></div>
+				        <div blc:price="${product.value.retailPrice}" th:classappend="${product.value.onSale}? 'has-sale'"></div>
+				    </div>
+				    <div class="price" th:unless="${#object instanceof T(org.broadleafcommerce.core.catalog.domain.ProductBundle)}">
+				        <div blc:price="${product.value.defaultSku.salePrice}" th:if="${product.value.defaultSku.onSale}" th:classappend="${product.value.defaultSku.onSale}? 'sale'"></div>
+				        <div blc:price="${product.value.defaultSku.retailPrice}" th:classappend="${product.value.defaultSku.onSale}? 'has-sale'"></div>
+				    </div>
+				    </a>
+				</div>
+
+				<div class="content">
+				    <div class="title" th:text="${product.value.name}"></div>
+				    <p th:utext="${product.value.longDescription}"></p>
+				    <p th:utext="${product.key}"></p>
+				</div>
+
+				<div th:class="test"
+				     th:with="checkInventory=${product.value.defaultSku.inventoryType?.type == 'CHECK_QUANTITY'},
+				              availableInventory=${checkInventory ? #object.defaultSku.quantityAvailable != null and #object.defaultSku.quantityAvailable != 0 : true},
+				              inCart=${cart.containsSku(product.value.defaultSku) and #lists.isEmpty(product.value.productOptions)}">
+
+				    <div th:if="${checkInventory and !availableInventory}" class="out_of_stock">
+				        <a disabled="disabled" class="inCart">Out of Stock</a>
+				    </div>
+				    <div class="in_cart" th:classappend="${!inCart}? ' hidden'" th:if="${#lists.isEmpty(product.value.productOptions)}">
+				        <a class="modalcart inCart" th:href="@{/cart}"><span th:text="#{product.inCart}">In Cart!</span></a>
+				    </div>
+
+				    <div class="add_to_cart" th:classappend="${inCart or !availableInventory}? ' hidden'">
+				        <blc:form method="POST" th:action="@{/cart/add}">
+				            <input type="hidden" name="productId" th:value="${product.value.id}" />
+				            <input type="hidden" name="quantity" value="1" />
+				            <input type="hidden" name="hasProductOptions" th:value="*{!#lists.isEmpty(value.productOptions)}" />
+				            <input type="submit" class="addToCart" th:value="#{product.buyNow}"/>
+				        </blc:form>
+				    </div>
+
+				</div>
+
+				<div style="display: none;" th:id="*{'productOptions' + '10'}" class="product-options modal">
+				    <h3 th:text="${product.value.name}"></h3>
+				    <!--<div class="product-options" th:substituteby="catalog/partials/productOptions"/>-->
+				    <input type="button" class="addToCart" th:value="#{product.buyNow}" />
+				</div>
+
+
+                </li>
+            </ul>
+
+            <div th:substituteby="catalog/partials/productPagingOptions" />
+
+        </section>
+
+        <section id="right_column">
+            <header><span th:text="#{category.filterResults}">Filter your results</span></header>
+            <div id="options">
+
+                <div th:substituteby="catalog/partials/facetFilter" />
+
+                <div th:substituteby="catalog/partials/rightHandBannerAds" />
+
+                <section id="right_column">
+                    <header><span th:text="#{category.featuredProducts}">Featured Products</span></header>
+                    <div id="options">
+                        <div class="section" th:object="${category}">
+                             <blc:related_products categoryId="*{id}" quantity="3"/>
+                             <ul id="featured_products" class="group">
+                                <li th:each="product : ${products}" th:object="${product}" th:include="catalog/partials/productListItem" class="product_container"></li>
+                             </ul>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </section>
+
+    </div>
+
+    <footer th:substituteby="layout/partials/footer" />
+
+</body>
+</html>
